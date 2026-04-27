@@ -2,6 +2,11 @@
 #include <stack>
 
 void Digit(char c) {
+	// 如果刚计算过有结果，开始新算式时清空旧算式
+	if (!res.empty()) {
+		formula.clear();
+		res.clear();
+	}
 	if ((int)expr.length() >= 18) return;
 	if (c == '.') {
 		if (expr.find('.') == tstring::npos)
@@ -12,6 +17,11 @@ void Digit(char c) {
 }
 
 void Operator(char op) {
+	// 如果刚计算过有结果，把结果作为新算式的起始值
+	if (!res.empty()) {
+		formula = res;
+		res.clear();
+	}
 	if (!expr.empty()) {
 		formula += expr;
 		expr.clear();
@@ -20,6 +30,11 @@ void Operator(char op) {
 }
 
 void leftParen() {
+	// 如果刚计算过有结果，开始新算式时清空旧算式
+	if (!res.empty()) {
+		formula.clear();
+		res.clear();
+	}
 	if (!expr.empty()) {
 		formula += expr;
 		expr.clear();
@@ -60,8 +75,6 @@ void Equal() {
 
 	if (full.empty()) {
 		res = _T("Empty input!");
-		formula.clear();
-		expr.clear();
 		return;
 	}
 
@@ -69,7 +82,7 @@ void Equal() {
 	tstring newformula;
 	for (int i = 0; i < full.length(); ++i) {
 		TCHAR ch = full[i];
-		
+
 		//数字
 		if ((ch >= '0' && ch <= '9')||ch=='.') {
 			while (i + 1 < full.length() && ((full[i+1] >= '0' && full[i+1] <= '9') || full[i+1] == '.')) {
@@ -92,9 +105,7 @@ void Equal() {
 				newformula += ' ';
 			}
 			if (ops.empty()) {
-				res = _T("Parentheses error!");
-				formula.clear();
-				expr.clear();
+				res = _T("Right parentheses error!");
 				return;
 			}
 			else ops.pop();
@@ -110,6 +121,17 @@ void Equal() {
 		}
 	}
 
+	// 先检查左括号是否多于右括号
+	std::stack<char> tempOps = ops;
+	while (!tempOps.empty()) {
+		if (tempOps.top() == '(') {
+			res = _T("Left parentheses error!");
+			return;
+		}
+		tempOps.pop();
+	}
+
+	// 再弹出剩余运算符
 	while (!ops.empty()) {
 		newformula += ops.top();
 		newformula += ' ';
@@ -132,9 +154,7 @@ void Equal() {
 		else {
 			//检查 一个符号至少有两个数
 			if (nums.size() < 2) {
-				res = _T("Invalid expression");
-				formula.clear();
-				expr.clear();
+				res = _T("Invalid expression!");
 				return;
 			}
 
@@ -153,7 +173,7 @@ void Equal() {
 				double x3 = x1 * x2;
 				nums.push(x3);
 			}
-			
+
 			else if (newformula[i] == '-') {
 				double x1 = nums.top();
 				nums.pop();
@@ -161,14 +181,12 @@ void Equal() {
 				double x3 = x2-x1;
 				nums.push(x3);
 			}
-			
+
 			else if (newformula[i] == '/') {
 				double x1 = nums.top();
 
 				if (x1 == 0) {
 					res = _T("Divisor error!");
-					formula.clear();
-					expr.clear();
 					return;
 				}
 
@@ -179,9 +197,9 @@ void Equal() {
 			}
 		}
 	}
-	
+
 	double result = nums.top();
 	res = std::to_wstring(result);
-	formula.clear();
-	expr =res;
+	formula = full + _T("=");
+	expr.clear();
 }

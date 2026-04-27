@@ -23,9 +23,18 @@ void showscreen()
     if (!expr.empty())
         drawtext(expr.c_str(), &rResult,
                  DT_RIGHT | DT_VCENTER | DT_SINGLELINE | DT_END_ELLIPSIS);
-    else if (!res.empty())
-        drawtext(res.c_str(), &rResult,
-                 DT_RIGHT | DT_VCENTER | DT_SINGLELINE | DT_END_ELLIPSIS);
+    else if (!res.empty()) {
+        // 错误信息用较小字体显示
+        if (res == _T("Left parentheses error!") ||res==_T("Right parentheses error!") || res == _T("Invalid expression") ||
+            res == _T("Divisor error!") || res == _T("Empty input!")) {
+            settextstyle(30, 0, _T("Consolas"));
+            drawtext(res.c_str(), &rResult,
+                     DT_CENTER | DT_VCENTER | DT_SINGLELINE);
+        } else {
+            drawtext(res.c_str(), &rResult,
+                     DT_RIGHT | DT_VCENTER | DT_SINGLELINE | DT_END_ELLIPSIS);
+        }
+    }
     else
         drawtext(_T("0"), &rResult,
                  DT_RIGHT | DT_VCENTER | DT_SINGLELINE);
